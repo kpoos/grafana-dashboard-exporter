@@ -1,0 +1,24 @@
+#!/bin/bash
+## create view only API Key in grafana, and add that to APIKEY variable!
+
+
+set -o errexit
+set -o pipefail
+
+HOST="hostname"
+PORT=":3000"	#if no need, then leave it empty
+APIKEY="copy api key here from grafana"
+USER="admin"
+PASS="admin"
+FULLURL="https://$USER:$PASS@$HOST$PORT"
+DIR="dashboards-$HOST"
+
+set -o nounset
+
+echo "Exporting Grafana dashboards from $HOST"
+mkdir -p $DIR 
+for dash in $(curl -kH "Authorization: Bearer $APIKEY" "$FULLURL/api/search?query=&" | jq -r '.[] | select(.type == "dash-db") | .uid'); do
+        curl -kH "Authorization: Bearer $APIKEY"  "$FULLURL/api/dashboards/uid/$dash" | jq -r {meta:.meta}+.dashboard > $DIR/${dash}.json 
+        slug=$(cat $DIR/${dash}.json | jq -r '.meta.slug')
+        mv $DIR/${dash}.json $DIR/${dash}-${slug}.json
+done
