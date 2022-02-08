@@ -1,5 +1,5 @@
 # grafana-dashboard-exporter
-Export all grafana dashboards over https api
+Export all grafana dashboards with curl into json files
 
 # Usage
 
